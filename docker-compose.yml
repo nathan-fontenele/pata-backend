@@ -1,0 +1,34 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__PostgreSql: Host=db;Port=5432;Database=pata;Username=pata;Password=${POSTGRES_PASSWORD:-pata_local}
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: pata
+      POSTGRES_USER: pata
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-pata_local}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pata_postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pata -d pata"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+volumes:
+  pata_postgres:

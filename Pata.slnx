@@ -1,6 +1,8 @@
 <Solution>
   <Folder Name="/src/">
     <Project Path="Pata.Application/Pata.Application.csproj" />
+    <Project Path="Pata.Infrastructure/Pata.Infrastructure.csproj" />
+    <Project Path="Pata.Api/Pata.Api.csproj" />
     <Project Path="Pata.Domain/Pata.Domain.csproj" />
   </Folder>
   <Folder Name="/test/">
