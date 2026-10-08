@@ -11,7 +11,7 @@ using Pata.Domain.Entidades.Cobranca;
 namespace Pata.Api.Controllers;
 
 [ApiController]
-[Authorize]
+[Authorize(Policy = "AdminClinica")]
 [Route("api")]
 [Produces("application/json")]
 public sealed class CobrancasController(ISender sender, IContextoTenant tenant) : ControllerBase

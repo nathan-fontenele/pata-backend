@@ -26,7 +26,7 @@ public sealed class PlanosController(ISender sender) : ControllerBase
     }
 
     [HttpPost]
-    [Authorize(Roles = "admin")]
+    [Authorize(Policy = "AdminClinica")]
     public async Task<ActionResult<RecursoCriadoDto>> Criar(PlanoRequest dto, CancellationToken cancellationToken)
     {
         var plano = new Plano(dto.Codigo, dto.Nome, dto.Descricao);
@@ -42,7 +42,7 @@ public sealed class PlanosController(ISender sender) : ControllerBase
     }
 
     [HttpPost("{planoId:guid}/precos")]
-    [Authorize(Roles = "admin")]
+    [Authorize(Policy = "AdminClinica")]
     public async Task<ActionResult<RecursoCriadoDto>> CriarPreco(Guid planoId, PrecoPlanoRequest dto, CancellationToken cancellationToken)
     {
         var preco = new PrecoPlano(planoId, dto.Codigo, dto.Valor, dto.Moeda, dto.DiasTeste,

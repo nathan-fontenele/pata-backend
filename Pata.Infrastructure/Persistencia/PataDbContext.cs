@@ -148,7 +148,7 @@ public sealed class PataDbContext(
                 entry.Metadata.ClrType.Name,
                 acao,
                 agora,
-                usuarioAtual.Identificador,
+                ObterAutorAuditoria(),
                 antes,
                 depois,
                 acao == AcaoAuditoria.Editado ? agora : null,
@@ -156,6 +156,18 @@ public sealed class PataDbContext(
                 excluida ? agora : excluivel?.ExcluidoEm is DateTime excluidoEm
                     ? new DateTimeOffset(DateTime.SpecifyKind(excluidoEm, DateTimeKind.Utc)) : null,
                 excluida ? usuarioAtual.Identificador : excluivel?.ExcluidoPor));
+        }
+    }
+
+    private string ObterAutorAuditoria()
+    {
+        try
+        {
+            return usuarioAtual.Identificador;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return "cadastro-publico";
         }
     }
 

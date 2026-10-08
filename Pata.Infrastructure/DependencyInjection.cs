@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Pata.Application.Comum.Abstracoes;
@@ -25,10 +26,18 @@ public static class DependencyInjection
 
         services.AddSingleton(TimeProvider.System);
         services.AddDbContext<PataDbContext>(options =>
-            options.UseNpgsql(connectionString, npgsql => npgsql.EnableRetryOnFailure()));
+            options
+                // O baseline foi escrito em SQL para preservar tabelas existentes e adicionar
+                // tenant_id sem atribuir os dados legados a uma clínica. Como o snapshot
+                // manual não representa os filtros dinâmicos por tenant do DbContext, o EF
+                // detecta uma diferença de modelo que não altera o schema desta migration.
+                .ConfigureWarnings(warnings => warnings.Ignore(RelationalEventId.PendingModelChangesWarning))
+                .UseNpgsql(connectionString, npgsql => npgsql.EnableRetryOnFailure()));
         services.AddScoped<IRepositorioTutor, RepositorioTutor>();
         services.AddScoped<IRepositorioVeterinario, RepositorioVeterinario>();
         services.AddScoped<IRepositorioConsulta, RepositorioConsulta>();
+        services.AddScoped<IRepositorioOrganizacao, RepositorioOrganizacao>();
+        services.AddScoped<IRepositorioConviteUsuario, RepositorioConviteUsuario>();
         services.AddScoped<IConsultaTutores, ConsultaTutores>();
         services.AddScoped<IConsultaVeterinarios, ConsultaVeterinarios>();
         services.AddScoped<RepositorioCadastroAnimal>();

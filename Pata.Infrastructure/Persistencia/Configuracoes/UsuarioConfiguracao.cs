@@ -17,11 +17,15 @@ internal sealed class UsuarioConfiguracao : IEntityTypeConfiguration<Usuario>
             .HasPrincipalKey(item => new { item.Id, item.TenantId })
             .OnDelete(DeleteBehavior.Restrict);
         builder.HasIndex(item => new { item.TenantId, item.Email }).IsUnique();
+        builder.HasIndex(item => new { item.TenantId, item.Auth0Sub }).IsUnique()
+            .HasFilter("\"Auth0Sub\" IS NOT NULL");
         builder.Property(item => item.Nome).HasMaxLength(100).IsRequired();
         builder.Property(item => item.Sobrenome).HasMaxLength(100).IsRequired();
         builder.Property(item => item.Email).HasMaxLength(254).IsRequired();
         builder.Property(item => item.Telefone).HasMaxLength(30);
         builder.Property(item => item.Cargo).HasMaxLength(100);
         builder.Property(item => item.Status).HasConversion<string>().HasMaxLength(30).IsRequired();
+        builder.Property(item => item.Perfil).HasConversion<string>().HasMaxLength(30).IsRequired();
+        builder.Property(item => item.Auth0Sub).HasMaxLength(200);
     }
 }

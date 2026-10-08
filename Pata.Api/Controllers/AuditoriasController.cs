@@ -8,7 +8,7 @@ using Pata.Domain.Entidades.Auditoria;
 namespace Pata.Api.Controllers;
 
 [ApiController]
-[Authorize]
+[Authorize(Policy = "AdminClinica")]
 [Route("api/auditorias")]
 [Produces("application/json")]
 public sealed class AuditoriasController(ISender sender) : ControllerBase

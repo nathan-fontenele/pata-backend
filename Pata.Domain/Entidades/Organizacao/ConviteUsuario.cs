@@ -27,4 +27,11 @@ public sealed class ConviteUsuario : EntidadeTenant<Guid>
     public DateTimeOffset? AceitoEm { get; private set; }
     public DateTimeOffset? RevogadoEm { get; private set; }
     public Guid? ConvidadoPorUsuarioId { get; private set; }
+
+    public void Aceitar(DateTimeOffset agora)
+    {
+        if (AceitoEm.HasValue || RevogadoEm.HasValue || ExpiraEm <= agora)
+            throw new RegraDeNegocioException("O convite esta expirado, revogado ou ja foi aceito.");
+        AceitoEm = agora;
+    }
 }
