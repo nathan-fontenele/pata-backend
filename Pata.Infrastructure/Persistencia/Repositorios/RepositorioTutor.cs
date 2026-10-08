@@ -12,19 +12,22 @@ internal sealed class RepositorioTutor(PataDbContext contexto) : IRepositorioTut
         contexto.Tutores.SingleOrDefaultAsync(tutor => tutor.Id == id, tokenCancelamento);
 
     public Task<TutorAgregado?> ObterPorIdIncluindoExcluidosAsync(Guid id, CancellationToken tokenCancelamento = default) =>
-        contexto.Tutores.IgnoreQueryFilters().SingleOrDefaultAsync(tutor => tutor.Id == id, tokenCancelamento);
+        contexto.Tutores.IgnoreQueryFilters().SingleOrDefaultAsync(
+            tutor => tutor.TenantId == contexto.TenantId && tutor.Id == id, tokenCancelamento);
 
     public Task<TutorAgregado?> ObterPorCpfAsync(Cpf cpf, CancellationToken tokenCancelamento = default) =>
         contexto.Tutores.SingleOrDefaultAsync(tutor => tutor.Cpf == cpf, tokenCancelamento);
 
     public Task<TutorAgregado?> ObterPorCpfIncluindoExcluidosAsync(Cpf cpf, CancellationToken tokenCancelamento = default) =>
-        contexto.Tutores.IgnoreQueryFilters().SingleOrDefaultAsync(tutor => tutor.Cpf == cpf, tokenCancelamento);
+        contexto.Tutores.IgnoreQueryFilters().SingleOrDefaultAsync(
+            tutor => tutor.TenantId == contexto.TenantId && tutor.Cpf == cpf, tokenCancelamento);
 
     public Task<bool> ExisteCpfAsync(Cpf cpf, CancellationToken tokenCancelamento = default) =>
         contexto.Tutores.AnyAsync(tutor => tutor.Cpf == cpf, tokenCancelamento);
 
     public Task<bool> ExisteCpfIncluindoExcluidosAsync(Cpf cpf, CancellationToken tokenCancelamento = default) =>
-        contexto.Tutores.IgnoreQueryFilters().AnyAsync(tutor => tutor.Cpf == cpf, tokenCancelamento);
+        contexto.Tutores.IgnoreQueryFilters().AnyAsync(
+            tutor => tutor.TenantId == contexto.TenantId && tutor.Cpf == cpf, tokenCancelamento);
 
     public async Task AdicionarAsync(TutorAgregado tutor, CancellationToken tokenCancelamento = default)
     {

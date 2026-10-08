@@ -11,6 +11,8 @@ internal sealed class VeterinarioConfiguracao : IEntityTypeConfiguration<Veterin
     {
         builder.ToTable("veterinarios");
         builder.HasKey(veterinario => veterinario.Id);
+        builder.MapearTenant();
+        builder.HasAlternateKey(veterinario => new { veterinario.Id, veterinario.TenantId });
         builder.Property(veterinario => veterinario.Nome).HasMaxLength(Veterinario.TamanhoMaximoNome).IsRequired();
         builder.Property(veterinario => veterinario.Email)
             .HasConversion(email => email.Valor, valor => new Email(valor))
@@ -21,7 +23,7 @@ internal sealed class VeterinarioConfiguracao : IEntityTypeConfiguration<Veterin
         builder.Property(veterinario => veterinario.Crmv)
             .HasConversion(crmv => crmv.Valor, valor => new Crmv(valor.Split('/')[0], valor.Split('/')[1]))
             .HasMaxLength(9).IsRequired();
-        builder.HasIndex(veterinario => veterinario.Crmv).IsUnique();
+        builder.HasIndex(veterinario => new { veterinario.TenantId, veterinario.Crmv }).IsUnique();
         builder.Property(veterinario => veterinario.Especialidade)
             .HasMaxLength(Veterinario.TamanhoMaximoEspecialidade).IsRequired();
         TutorConfiguracao.ConfigurarAuditoria(builder);

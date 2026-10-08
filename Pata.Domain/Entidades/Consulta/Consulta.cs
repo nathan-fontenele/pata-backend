@@ -16,7 +16,24 @@ public sealed class Consulta : RaizAgregadaAuditavel<Guid>
         Guid veterinarioId,
         Guid tutorId,
         DateTimeOffset dataHora,
-        DateTimeOffset dataAtual) : base(Guid.NewGuid())
+        DateTimeOffset dataAtual) : base(Guid.NewGuid()) =>
+        Inicializar(animalId, veterinarioId, tutorId, dataHora, dataAtual);
+
+    public Consulta(
+        Guid tenantId,
+        Guid animalId,
+        Guid veterinarioId,
+        Guid tutorId,
+        DateTimeOffset dataHora,
+        DateTimeOffset dataAtual) : base(Guid.NewGuid(), tenantId) =>
+        Inicializar(animalId, veterinarioId, tutorId, dataHora, dataAtual);
+
+    private void Inicializar(
+        Guid animalId,
+        Guid veterinarioId,
+        Guid tutorId,
+        DateTimeOffset dataHora,
+        DateTimeOffset dataAtual)
     {
         ValidarIdentificador(animalId, nameof(animalId), "Animal");
         ValidarIdentificador(veterinarioId, nameof(veterinarioId), "Veterinario");

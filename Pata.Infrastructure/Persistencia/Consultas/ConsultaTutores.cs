@@ -2,10 +2,11 @@ using Microsoft.EntityFrameworkCore;
 using Pata.Application.Comum.Modelos;
 using Pata.Application.Funcionalidades.Tutor.Consultas;
 using Pata.Domain.ObjetosValor;
+using Pata.Application.Comum.Abstracoes;
 
 namespace Pata.Infrastructure.Persistencia.Consultas;
 
-internal sealed class ConsultaTutores(PataDbContext contexto) : IConsultaTutores
+internal sealed class ConsultaTutores(PataDbContext contexto, IContextoTenant contextoTenant) : IConsultaTutores
 {
     public async Task<TutorResumoDto?> ObterPorCpfAsync(Cpf cpf, CancellationToken tokenCancelamento = default) =>
         Projetar(await contexto.Tutores.AsNoTracking()
@@ -21,7 +22,8 @@ internal sealed class ConsultaTutores(PataDbContext contexto) : IConsultaTutores
     private async Task<RespostaPaginada<TutorResumoDto>> Listar(
         int pagina, int tamanhoPagina, bool excluidos, CancellationToken tokenCancelamento)
     {
-        var query = contexto.Tutores.IgnoreQueryFilters().AsNoTracking().Where(tutor => tutor.Excluido == excluidos);
+        var query = contexto.Tutores.IgnoreQueryFilters().AsNoTracking()
+            .Where(tutor => tutor.TenantId == contextoTenant.TenantId && tutor.Excluido == excluidos);
         var total = await query.CountAsync(tokenCancelamento);
         var itens = await query.OrderBy(tutor => tutor.Nome)
             .Skip((pagina - 1) * tamanhoPagina).Take(tamanhoPagina)

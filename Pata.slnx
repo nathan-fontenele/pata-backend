@@ -7,6 +7,8 @@
   </Folder>
   <Folder Name="/test/">
     <Project Path="Pata.Application.Tests/Pata.Application.Tests.csproj" />
+    <Project Path="Pata.Api.Tests/Pata.Api.Tests.csproj" />
     <Project Path="Pata.Domain.Tests/Pata.Domain.Tests.csproj" />
+    <Project Path="Pata.Infrastructure.Tests/Pata.Infrastructure.Tests.csproj" />
   </Folder>
 </Solution>

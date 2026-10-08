@@ -12,11 +12,13 @@ internal sealed class TutorConfiguracao : IEntityTypeConfiguration<Tutor>
     {
         builder.ToTable("tutores");
         builder.HasKey(tutor => tutor.Id);
+        builder.MapearTenant();
+        builder.HasAlternateKey(tutor => new { tutor.Id, tutor.TenantId });
         builder.Property(tutor => tutor.Nome).HasMaxLength(150).IsRequired();
         builder.Property(tutor => tutor.Cpf)
             .HasConversion(cpf => cpf.Valor, valor => new Cpf(valor))
             .HasMaxLength(11).IsRequired();
-        builder.HasIndex(tutor => tutor.Cpf).IsUnique();
+        builder.HasIndex(tutor => new { tutor.TenantId, tutor.Cpf }).IsUnique();
         builder.Property(tutor => tutor.Email)
             .HasConversion(email => email.Valor, valor => new Email(valor))
             .HasMaxLength(254).IsRequired();
@@ -27,7 +29,8 @@ internal sealed class TutorConfiguracao : IEntityTypeConfiguration<Tutor>
 
         builder.HasMany(tutor => tutor.Animais)
             .WithOne()
-            .HasForeignKey(animal => animal.TutorId)
+            .HasForeignKey(animal => new { animal.TutorId, animal.TenantId })
+            .HasPrincipalKey(tutor => new { tutor.Id, tutor.TenantId })
             .OnDelete(DeleteBehavior.Cascade);
         builder.Navigation(tutor => tutor.Animais).HasField("_animais").UsePropertyAccessMode(PropertyAccessMode.Field);
     }
@@ -42,6 +45,5 @@ internal sealed class TutorConfiguracao : IEntityTypeConfiguration<Tutor>
         builder.Property<bool>("Excluido").IsRequired();
         builder.Property<DateTime?>("ExcluidoEm");
         builder.Property<string?>("ExcluidoPor").HasMaxLength(150);
-        builder.HasQueryFilter(entity => EF.Property<bool>(entity, "Excluido") == false);
     }
 }

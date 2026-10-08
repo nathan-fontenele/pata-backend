@@ -125,9 +125,20 @@ public class AnimalTests
     public void DeveRejeitarAnimalQueNaoPertenceAoTutor()
     {
         var tutor = CriarTutor();
+        var outroTutor = CriarTutor();
+        var animalDoOutroTutor = outroTutor.AdicionarAnimal(
+            "Bidu", Especie.Cachorro, Raca, new DateOnly(2020, 1, 1), DataAtual);
 
-        Assert.Throws<RecursoNaoEncontradoException>(() =>
-            tutor.RemoverAnimal(Guid.NewGuid()));
+        Assert.Throws<RecursoNaoEncontradoException>(() => tutor.RemoverAnimal(animalDoOutroTutor.Id));
+        Assert.Throws<RecursoNaoEncontradoException>(() => tutor.AlterarAnimal(
+            animalDoOutroTutor.Id,
+            "Bidu atualizado",
+            Especie.Cachorro,
+            Raca,
+            new DateOnly(2020, 1, 1),
+            DataAtual));
+        Assert.Single(outroTutor.Animais);
+        Assert.Empty(tutor.Animais);
     }
 
     [Fact]
@@ -234,6 +245,7 @@ public class AnimalTests
     }
 
     private static Tutor CriarTutor() => new(
+        Guid.NewGuid(),
         "Maria Silva",
         CpfValido,
         new Email("tutor@pata.com.br"),

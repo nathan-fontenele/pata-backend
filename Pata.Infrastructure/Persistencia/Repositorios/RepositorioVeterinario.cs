@@ -12,19 +12,22 @@ internal sealed class RepositorioVeterinario(PataDbContext contexto) : IReposito
         contexto.Veterinarios.SingleOrDefaultAsync(veterinario => veterinario.Id == id, tokenCancelamento);
 
     public Task<VeterinarioAgregado?> ObterPorIdIncluindoExcluidosAsync(Guid id, CancellationToken tokenCancelamento = default) =>
-        contexto.Veterinarios.IgnoreQueryFilters().SingleOrDefaultAsync(veterinario => veterinario.Id == id, tokenCancelamento);
+        contexto.Veterinarios.IgnoreQueryFilters().SingleOrDefaultAsync(
+            veterinario => veterinario.TenantId == contexto.TenantId && veterinario.Id == id, tokenCancelamento);
 
     public Task<VeterinarioAgregado?> ObterPorCrmvAsync(Crmv crmv, CancellationToken tokenCancelamento = default) =>
         contexto.Veterinarios.SingleOrDefaultAsync(veterinario => veterinario.Crmv == crmv, tokenCancelamento);
 
     public Task<VeterinarioAgregado?> ObterPorCrmvIncluindoExcluidosAsync(Crmv crmv, CancellationToken tokenCancelamento = default) =>
-        contexto.Veterinarios.IgnoreQueryFilters().SingleOrDefaultAsync(veterinario => veterinario.Crmv == crmv, tokenCancelamento);
+        contexto.Veterinarios.IgnoreQueryFilters().SingleOrDefaultAsync(
+            veterinario => veterinario.TenantId == contexto.TenantId && veterinario.Crmv == crmv, tokenCancelamento);
 
     public Task<bool> ExisteCrmvAsync(Crmv crmv, CancellationToken tokenCancelamento = default) =>
         contexto.Veterinarios.AnyAsync(veterinario => veterinario.Crmv == crmv, tokenCancelamento);
 
     public Task<bool> ExisteCrmvIncluindoExcluidosAsync(Crmv crmv, CancellationToken tokenCancelamento = default) =>
-        contexto.Veterinarios.IgnoreQueryFilters().AnyAsync(veterinario => veterinario.Crmv == crmv, tokenCancelamento);
+        contexto.Veterinarios.IgnoreQueryFilters().AnyAsync(
+            veterinario => veterinario.TenantId == contexto.TenantId && veterinario.Crmv == crmv, tokenCancelamento);
 
     public async Task AdicionarAsync(VeterinarioAgregado veterinario, CancellationToken tokenCancelamento = default)
     {

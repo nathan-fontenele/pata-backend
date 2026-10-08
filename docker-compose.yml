@@ -5,6 +5,9 @@ services:
       dockerfile: Dockerfile
     environment:
       ASPNETCORE_ENVIRONMENT: Development
+      Jwt__Issuer: ${JWT_ISSUER:-pata-auth}
+      Jwt__Audience: ${JWT_AUDIENCE:-pata-api}
+      Jwt__SigningKey: ${JWT_SIGNING_KEY:-pata-local-development-key-change-before-deployment}
       ConnectionStrings__PostgreSql: Host=db;Port=5432;Database=pata;Username=pata;Password=${POSTGRES_PASSWORD:-pata_local}
     ports:
       - "8080:8080"

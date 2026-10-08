@@ -10,6 +10,8 @@ internal sealed class AnimalConfiguracao : IEntityTypeConfiguration<Animal>
     {
         builder.ToTable("animais");
         builder.HasKey(animal => animal.Id);
+        builder.MapearTenant();
+        builder.HasAlternateKey(animal => new { animal.Id, animal.TenantId });
         builder.Property(animal => animal.Nome).HasMaxLength(100).IsRequired();
         builder.Property(animal => animal.Raca).HasMaxLength(100).IsRequired();
         builder.Property(animal => animal.Especie).HasConversion<string>().HasMaxLength(30);

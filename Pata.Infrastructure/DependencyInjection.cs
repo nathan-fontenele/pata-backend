@@ -4,10 +4,13 @@ using Microsoft.Extensions.DependencyInjection;
 using Pata.Application.Comum.Abstracoes;
 using Pata.Application.Funcionalidades.Tutor.Consultas;
 using Pata.Application.Funcionalidades.Veterinario.Consultas;
+using Pata.Application.Funcionalidades.Animal.Cadastro;
+using Pata.Application.Funcionalidades.Animal.Portal;
 using Pata.Domain.Repositorios;
 using Pata.Infrastructure.Persistencia;
 using Pata.Infrastructure.Persistencia.Consultas;
 using Pata.Infrastructure.Persistencia.Repositorios;
+using Pata.Infrastructure.Persistencia.Recursos;
 
 namespace Pata.Infrastructure;
 
@@ -28,8 +31,10 @@ public static class DependencyInjection
         services.AddScoped<IRepositorioConsulta, RepositorioConsulta>();
         services.AddScoped<IConsultaTutores, ConsultaTutores>();
         services.AddScoped<IConsultaVeterinarios, ConsultaVeterinarios>();
+        services.AddScoped<RepositorioCadastroAnimal>();
+        services.AddScoped<IRepositorioCadastroAnimal>(sp => sp.GetRequiredService<RepositorioCadastroAnimal>());
+        services.AddScoped<IConsultaPortalTutor>(sp => sp.GetRequiredService<RepositorioCadastroAnimal>());
         services.AddScoped<IRelogio, Relogio>();
-        services.AddScoped<IUsuarioAtual, UsuarioAtualSistema>();
         return services;
     }
 }
@@ -37,11 +42,4 @@ public static class DependencyInjection
 internal sealed class Relogio(TimeProvider timeProvider) : IRelogio
 {
     public DateTime UtcAgora => timeProvider.GetUtcNow().UtcDateTime;
-}
-
-internal sealed class UsuarioAtualSistema : IUsuarioAtual
-{
-    public string Identificador => "sistema";
-    public string Perfil => "sistema";
-    public IReadOnlyCollection<string> Papeis => ["sistema"];
 }

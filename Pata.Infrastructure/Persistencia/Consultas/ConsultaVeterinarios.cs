@@ -2,10 +2,11 @@ using Microsoft.EntityFrameworkCore;
 using Pata.Application.Comum.Modelos;
 using Pata.Application.Funcionalidades.Veterinario.Consultas;
 using Pata.Domain.ObjetosValor;
+using Pata.Application.Comum.Abstracoes;
 
 namespace Pata.Infrastructure.Persistencia.Consultas;
 
-internal sealed class ConsultaVeterinarios(PataDbContext contexto) : IConsultaVeterinarios
+internal sealed class ConsultaVeterinarios(PataDbContext contexto, IContextoTenant contextoTenant) : IConsultaVeterinarios
 {
     public async Task<VeterinarioResumoDto?> ObterPorCrmvAsync(Crmv crmv, CancellationToken tokenCancelamento = default) =>
         Projetar(await contexto.Veterinarios.AsNoTracking()
@@ -22,7 +23,8 @@ internal sealed class ConsultaVeterinarios(PataDbContext contexto) : IConsultaVe
         int pagina, int tamanhoPagina, bool excluidos, CancellationToken tokenCancelamento)
     {
         var query = contexto.Veterinarios.IgnoreQueryFilters().AsNoTracking()
-            .Where(veterinario => veterinario.Excluido == excluidos);
+            .Where(veterinario => veterinario.TenantId == contextoTenant.TenantId
+                                  && veterinario.Excluido == excluidos);
         var total = await query.CountAsync(tokenCancelamento);
         var itens = await query.OrderBy(veterinario => veterinario.Nome)
             .Skip((pagina - 1) * tamanhoPagina).Take(tamanhoPagina)

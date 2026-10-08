@@ -1,5 +1,6 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using Pata.Api.DTOs;
 using Pata.Api.DTOs.Tutores;
 using Pata.Application.Funcionalidades.Tutor.Comandos.AtualizarTutor;
@@ -9,10 +10,13 @@ using Pata.Application.Funcionalidades.Tutor.Comandos.RecuperarTutor;
 using Pata.Application.Funcionalidades.Tutor.Consultas.ListarTutores;
 using Pata.Application.Funcionalidades.Tutor.Consultas.ListarTutoresExcluidos;
 using Pata.Application.Funcionalidades.Tutor.Consultas.ObterTutorPorCpf;
+using Pata.Application.Funcionalidades.Animal.Comandos.GerarLinkTutor;
+using Pata.Application.Funcionalidades.Animal.Comandos.RevogarLinkTutor;
 
 namespace Pata.Api.Controllers;
 
 [ApiController]
+[Authorize]
 [Route("api/tutores")]
 [Produces("application/json")]
 public sealed class TutoresController(ISender sender) : ControllerBase
@@ -85,4 +89,24 @@ public sealed class TutoresController(ISender sender) : ControllerBase
         await sender.Send(new RecuperarTutorComando(id), cancellationToken);
         return NoContent();
     }
+
+    [HttpPost("{id:guid}/link-acompanhamento")]
+    [ProducesResponseType(typeof(LinkAcompanhamentoDto), StatusCodes.Status200OK)]
+    public async Task<ActionResult<LinkAcompanhamentoDto>> GerarLinkAcompanhamento(Guid id,
+        CancellationToken cancellationToken)
+    {
+        var token = await sender.Send(new GerarLinkTutorComando(id), cancellationToken);
+        var link = Url.Link(nameof(PortalTutoresController.Obter), new { token });
+        return Ok(new LinkAcompanhamentoDto(link!));
+    }
+
+    [HttpDelete("{id:guid}/link-acompanhamento")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<IActionResult> RevogarLinkAcompanhamento(Guid id, CancellationToken cancellationToken)
+    {
+        await sender.Send(new RevogarLinkTutorComando(id), cancellationToken);
+        return NoContent();
+    }
 }
+
+public sealed record LinkAcompanhamentoDto(string Link);

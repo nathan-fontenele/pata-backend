@@ -4,7 +4,7 @@ using Pata.Domain.Excecoes;
 
 namespace Pata.Domain.Entidades.Animal;
 
-public sealed class Animal : Entidade<Guid>
+public sealed class Animal : Entidade<Guid>, ITenantEntity
 {
     public const int TamanhoMaximoNome = 100;
     public const int TamanhoMaximoRaca = 100;
@@ -29,7 +29,28 @@ public sealed class Animal : Entidade<Guid>
         AplicarDados(nome, especie, raca, dataNascimento, dataAtual);
     }
 
+    internal Animal(
+        Guid id,
+        Guid tutorId,
+        Guid tenantId,
+        string nome,
+        Especie especie,
+        string raca,
+        DateOnly dataNascimento,
+        DateOnly dataAtual) : base(id)
+    {
+        if (tutorId == Guid.Empty)
+            throw new ErroDeValidacao("Tutor e obrigatorio.", nameof(tutorId));
+        if (tenantId == Guid.Empty)
+            throw new ErroDeValidacao("Tenant e obrigatorio.", nameof(tenantId));
+
+        TutorId = tutorId;
+        TenantId = tenantId;
+        AplicarDados(nome, especie, raca, dataNascimento, dataAtual);
+    }
+
     public Guid TutorId { get; private set; }
+    public Guid TenantId { get; private set; }
     public string Nome { get; private set; } = null!;
     public Especie Especie { get; private set; }
     public string Raca { get; private set; } = null!;

@@ -39,6 +39,28 @@ public sealed class Veterinario : RaizAgregadaAuditavel<Guid>
             nameof(especialidade));
     }
 
+    public Veterinario(
+        Guid tenantId,
+        string nome,
+        Email email,
+        Telefone telefone,
+        Crmv crmv,
+        string especialidade) : base(Guid.NewGuid(), tenantId)
+    {
+        if (email is null)
+            throw new ErroDeValidacao("E-mail e obrigatorio.", nameof(email));
+        if (telefone is null)
+            throw new ErroDeValidacao("Telefone e obrigatorio.", nameof(telefone));
+        if (crmv is null)
+            throw new ErroDeValidacao("CRMV e obrigatorio.", nameof(crmv));
+
+        Nome = ValidarTexto(nome, TamanhoMaximoNome, nameof(nome));
+        Email = email;
+        Telefone = telefone;
+        Crmv = crmv;
+        Especialidade = ValidarTexto(especialidade, TamanhoMaximoEspecialidade, nameof(especialidade));
+    }
+
     public void AlterarNome(string nome) =>
         Nome = ValidarTexto(nome, TamanhoMaximoNome, nameof(nome));
 

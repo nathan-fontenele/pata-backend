@@ -2,7 +2,7 @@ using Pata.Domain.Excecoes;
 
 namespace Pata.Domain.Comum;
 
-public abstract class RaizAgregadaAuditavel<TId> : Entidade<TId>, IAuditavel, IExcluivel
+public abstract class RaizAgregadaAuditavel<TId> : Entidade<TId>, IAuditavel, IExcluivel, ITenantEntity
     where TId : notnull
 {
     protected RaizAgregadaAuditavel()
@@ -12,6 +12,15 @@ public abstract class RaizAgregadaAuditavel<TId> : Entidade<TId>, IAuditavel, IE
     protected RaizAgregadaAuditavel(TId id) : base(id)
     {
     }
+
+    protected RaizAgregadaAuditavel(TId id, Guid tenantId) : base(id)
+    {
+        if (tenantId == Guid.Empty)
+            throw new ErroDeValidacao("Tenant e obrigatorio.", nameof(tenantId));
+        TenantId = tenantId;
+    }
+
+    public Guid TenantId { get; private set; }
 
     public DateTime CriadoEm { get; private set; }
     public string CriadoPor { get; private set; } = default!;

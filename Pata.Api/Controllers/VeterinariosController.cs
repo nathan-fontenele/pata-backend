@@ -1,5 +1,6 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using Pata.Api.DTOs;
 using Pata.Api.DTOs.Veterinarios;
 using Pata.Application.Funcionalidades.Veterinario.Comandos.AtualizarVeterinario;
@@ -13,6 +14,7 @@ using Pata.Application.Funcionalidades.Veterinario.Consultas.ObterVeterinarioPor
 namespace Pata.Api.Controllers;
 
 [ApiController]
+[Authorize]
 [Route("api/veterinarios")]
 [Produces("application/json")]
 public sealed class VeterinariosController(ISender sender) : ControllerBase

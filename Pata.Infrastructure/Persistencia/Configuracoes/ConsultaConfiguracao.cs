@@ -2,6 +2,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Pata.Domain.Entidades.Consulta;
 using Pata.Domain.Entidades.Prontuario;
+using Pata.Domain.Entidades.Tutor;
+using Pata.Domain.Entidades.Veterinario;
+using Pata.Domain.Entidades.Animal;
 
 namespace Pata.Infrastructure.Persistencia.Configuracoes;
 
@@ -11,9 +14,21 @@ internal sealed class ConsultaConfiguracao : IEntityTypeConfiguration<Consulta>
     {
         builder.ToTable("consultas");
         builder.HasKey(consulta => consulta.Id);
+        builder.MapearTenant();
+        builder.HasAlternateKey(consulta => new { consulta.Id, consulta.TenantId });
+        builder.HasOne<Tutor>().WithMany()
+            .HasForeignKey(consulta => new { consulta.TutorId, consulta.TenantId })
+            .HasPrincipalKey(tutor => new { tutor.Id, tutor.TenantId }).OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne<Veterinario>().WithMany()
+            .HasForeignKey(consulta => new { consulta.VeterinarioId, consulta.TenantId })
+            .HasPrincipalKey(veterinario => new { veterinario.Id, veterinario.TenantId }).OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne<Animal>().WithMany()
+            .HasForeignKey(consulta => new { consulta.AnimalId, consulta.TenantId })
+            .HasPrincipalKey(animal => new { animal.Id, animal.TenantId }).OnDelete(DeleteBehavior.Restrict);
         builder.Property(consulta => consulta.Status).HasConversion<string>().HasMaxLength(30).IsRequired();
         builder.Property(consulta => consulta.DataHora).IsRequired();
         builder.HasIndex(consulta => new { consulta.VeterinarioId, consulta.DataHora });
+        TutorConfiguracao.ConfigurarAuditoria(builder);
 
         builder.OwnsOne(consulta => consulta.Prontuario, prontuario =>
         {

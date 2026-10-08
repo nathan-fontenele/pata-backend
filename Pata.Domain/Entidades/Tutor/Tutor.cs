@@ -38,6 +38,22 @@ public class Tutor : RaizAgregadaAuditavel<Guid>
         Telefone = telefone;
     }
 
+    public Tutor(Guid tenantId, string nome, Cpf cpf, Email email, Telefone telefone)
+        : base(Guid.NewGuid(), tenantId)
+    {
+        if (cpf is null)
+            throw new ErroDeValidacao("CPF e obrigatorio.", nameof(cpf));
+        if (email is null)
+            throw new ErroDeValidacao("E-mail e obrigatorio.", nameof(email));
+        if (telefone is null)
+            throw new ErroDeValidacao("Telefone e obrigatorio.", nameof(telefone));
+
+        Nome = ValidarNome(nome);
+        Cpf = cpf;
+        Email = email;
+        Telefone = telefone;
+    }
+
     public void AlterarNome(string nome) => Nome = ValidarNome(nome);
 
     public void AlterarEmail(Email email)
@@ -64,6 +80,7 @@ public class Tutor : RaizAgregadaAuditavel<Guid>
         var animal = new Animal.Animal(
             Guid.NewGuid(),
             Id,
+            TenantId,
             nome,
             especie,
             raca,
