@@ -8,6 +8,8 @@ services:
       Jwt__Issuer: ${JWT_ISSUER:-pata-auth}
       Jwt__Audience: ${JWT_AUDIENCE:-pata-api}
       Jwt__SigningKey: ${JWT_SIGNING_KEY:-pata-local-development-key-change-before-deployment}
+      Auth0__Authority: ${AUTH0_AUTHORITY:-}
+      Auth0__Audience: ${AUTH0_AUDIENCE:-}
       ConnectionStrings__PostgreSql: Host=db;Port=5432;Database=pata;Username=pata;Password=${POSTGRES_PASSWORD:-pata_local}
     ports:
       - "8080:8080"

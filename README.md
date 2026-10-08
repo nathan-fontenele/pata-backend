@@ -39,8 +39,11 @@ O domínio inclui:
 ### Usuários e veterinários
 
 - Usuários da clínica são associados a uma equipe e pertencem ao tenant da clínica.
+- A identidade do usuário é vinculada pelo `sub` validado do Auth0. O perfil (`Admin` ou `Usuario`) é persistido no banco; `Cargo` é apenas informativo.
+- O primeiro administrador é criado junto com a clínica e a equipe padrão em um único `SaveChanges`, dentro da transação automática do EF Core.
+- Rotas administrativas consultam o vínculo e o perfil persistidos para autorizar cada requisição.
+- Um administrador pode cadastrar usuários pendentes com perfil e enviar convites. `POST /api/convites/aceitar` exige access token Auth0 com `email` e `email_verified=true`, confere o e-mail contra o convite, vincula o `sub`, ativa o usuário e emite a sessão da clínica.
 - Cadastros de veterinários também são isolados por clínica.
-- A autenticação é validada pela API, mas a emissão de JWT, login e gestão de identidade são responsabilidade de um provedor externo e ainda não fazem parte deste projeto.
 
 ### Atendimento e cobrança
 
@@ -85,19 +88,31 @@ docker compose up --build
 - PostgreSQL: `localhost:5432`
 - Health check: `http://localhost:8080/health`
 
-O Compose usa `pata_local` como senha local padrão e mantém os dados no volume `pata_postgres`. Configure `POSTGRES_PASSWORD` para alterá-la. Configure também `JWT_ISSUER`, `JWT_AUDIENCE` e `JWT_SIGNING_KEY`; a chave padrão é apenas para desenvolvimento e deve ser substituída fora do ambiente local.
+O Compose usa `pata_local` como senha local padrão e mantém os dados no volume `pata_postgres`. Configure `POSTGRES_PASSWORD` para alterá-la. Copie `.env.example` para `.env` e preencha `AUTH0_AUTHORITY` com o domínio emissor do Auth0 e `AUTH0_AUDIENCE` com o Identifier da API. Configure também `JWT_ISSUER`, `JWT_AUDIENCE` e `JWT_SIGNING_KEY`; a chave padrão é apenas para desenvolvimento e deve ser substituída fora do ambiente local.
 
-Na inicialização, a aplicação usa `EnsureCreated` para criar o schema se o banco estiver vazio. Isso não atualiza um schema que já existe. Migrações do EF Core ainda não foram configuradas; portanto, alterações no modelo podem exigir uma migração ou a recriação do banco local.
+Na inicialização, a aplicação aplica as migrations do EF Core com `MigrateAsync`. A migration `202610080001_InitialSchema` cria o schema em bancos vazios e completa relações ausentes em bancos existentes sem apagar tabelas ou registros. A migration `202610080002_Auth0Admin` adiciona o vínculo Auth0 e o perfil persistido dos usuários.
+
+Ao atualizar o banco legado, os registros das tabelas `tutores`, `veterinarios`, `animais` e `consultas` recebem `tenant_id` nulo, pois o schema anterior não identifica a clínica de origem. Esses registros ficam fora das consultas tenant-scoped até receberem um mapeamento explícito para a clínica correta. A migration exige `tenant_id` nos novos registros e adiciona chaves estrangeiras compostas para impedir relações entre clínicas.
 
 ## Autenticação
 
-Exceto health check, documentação Swagger e endpoint de acompanhamento por link, as rotas de recursos exigem um JWT assinado pelo provedor de identidade. O token deve conter `sub` (identificador do usuário) e `tenant_id` (GUID da clínica). A API valida emissor, audiência, assinatura e validade. O Swagger permite informar o token pelo botão **Authorize**.
+O cadastro de clínica e a seleção de clínica recebem um access token Bearer do Auth0. A API valida emissor, audience, assinatura (JWKS) e validade. `POST /api/organizacao` usa o `sub` validado para criar a clínica, a equipe padrão e o administrador inicial atomicamente; não recebe identidade, tenant ou papel pelo corpo. A rota mantém o limite de cinco tentativas por IP a cada 15 minutos. Para aceitar convites, configure o Auth0 para incluir `email` e `email_verified` no access token da API.
+
+Após o cadastro ou a seleção de uma clínica, a API emite um JWT próprio com `sub`, `tenant_id`, `role` e `uid`, e o grava no cookie `pata_session` com `HttpOnly`, `SameSite=Lax` e `Secure` fora de Development. As rotas da clínica leem a sessão desse cookie ou do header Bearer. `GET /api/sessoes/organizacoes` lista os vínculos Auth0 ativos e `POST /api/sessoes` seleciona um tenant já autorizado. O proxy do frontend precisa encaminhar o cookie e preservar o `Set-Cookie` da API.
+
+O papel de administrador é confirmado contra o vínculo persistido no PostgreSQL nas rotas administrativas; o claim `role` não é aceito do cliente. O Swagger permite informar tokens Bearer pelo botão **Authorize**.
 
 ## Rotas principais
 
 ### Clínica, equipe e usuários
 
 - `GET /api/organizacao`
+- `POST /api/organizacao` cadastra a clínica e seu primeiro administrador com access token Auth0.
+- `GET /api/sessoes/organizacoes` lista as clínicas vinculadas ao usuário Auth0.
+- `POST /api/sessoes` seleciona uma clínica e emite o cookie de sessão Pata.
+- `DELETE /api/sessoes` encerra a sessão Pata.
+- `POST /api/organizacao/convites` cria convites para usuários pendentes.
+- `POST /api/convites/aceitar` aceita um convite com access token Auth0 e token do convite.
 - `GET/POST /api/organizacao/equipes` e `GET /api/organizacao/equipes/{id}`
 - `GET/POST /api/organizacao/usuarios` e `GET /api/organizacao/usuarios/{id}`
 - `GET/POST /api/organizacao/convites`
@@ -134,7 +149,7 @@ Exceto health check, documentação Swagger e endpoint de acompanhamento por lin
 
 ## Estado do projeto
 
-O projeto está em desenvolvimento. CQRS, persistência PostgreSQL, autenticação baseada em JWT e isolamento multi-tenant fazem parte da implementação atual. Integrações de identidade e comunicação, transições completas de cobrança, migrações do banco e a exploração de pools e silos são trabalhos futuros.
+O projeto está em desenvolvimento. CQRS, persistência PostgreSQL, validação de tokens Auth0, emissão de sessão Pata, vínculo de usuários e isolamento multi-tenant fazem parte da implementação atual. Integração de comunicação, transições completas de cobrança e a exploração de pools e silos são trabalhos futuros.
 
 ## Testes
 
