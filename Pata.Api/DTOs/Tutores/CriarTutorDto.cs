@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 namespace Pata.Api.DTOs.Tutores;
 
 public sealed record CriarTutorDto(
-    [property: Required] string Nome,
-    [property: Required] string Cpf,
-    [property: Required, EmailAddress] string Email,
-    [property: Required] string Telefone);
+    [param: Required] string Nome,
+    [param: Required] string Cpf,
+    [param: Required, EmailAddress] string Email,
+    [param: Required] string Telefone);

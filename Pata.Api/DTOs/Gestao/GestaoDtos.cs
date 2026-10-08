@@ -1,6 +1,7 @@
 using Pata.Domain.Entidades.Auditoria;
 using Pata.Domain.Entidades.Cobranca;
 using Pata.Domain.Entidades.Organizacao;
+using System.ComponentModel.DataAnnotations;
 
 namespace Pata.Api.DTOs.Gestao;
 
@@ -8,17 +9,24 @@ public sealed record OrganizacaoDto(Guid Id, string Nome, string Slug, string St
 {
     public static OrganizacaoDto De(Organizacao item) => new(item.Id, item.Nome, item.Slug, item.Status.ToString(), item.Cnpj, item.Email, item.LogoUrl);
 }
+public sealed record CriarOrganizacaoDto(
+    [param: Required] string Nome,
+    [param: Required] string Slug,
+    [param: Required] string Cnpj,
+    [param: Required, EmailAddress] string Email,
+    string? LogoUrl);
 public sealed record EquipeRequest(string Nome, string? Descricao);
 public sealed record EquipeDto(Guid Id, string Nome, string? Descricao, string Status)
 {
     public static EquipeDto De(Equipe item) => new(item.Id, item.Nome, item.Descricao, item.Status.ToString());
 }
-public sealed record UsuarioRequest(Guid EquipeId, string Nome, string Sobrenome, string Email, string? Telefone, string? Cargo);
+public sealed record UsuarioRequest(Guid EquipeId, string Nome, string Sobrenome, string Email, string? Telefone,
+    string? Cargo, PerfilUsuario Perfil = PerfilUsuario.Usuario);
 public sealed record UsuarioDto(Guid Id, Guid EquipeId, string Nome, string Sobrenome, string Email, string? Telefone,
-    string? Cargo, DateTimeOffset? UltimoAcessoEm, string Status)
+    string? Cargo, DateTimeOffset? UltimoAcessoEm, string Status, string Perfil)
 {
     public static UsuarioDto De(Usuario item) => new(item.Id, item.EquipeId, item.Nome, item.Sobrenome, item.Email,
-        item.Telefone, item.Cargo, item.UltimoAcessoEm, item.Status.ToString());
+        item.Telefone, item.Cargo, item.UltimoAcessoEm, item.Status.ToString(), item.Perfil.ToString());
 }
 public sealed record ConviteRequest(Guid UsuarioId, DateTimeOffset ExpiraEm);
 public sealed record ConviteDto(Guid Id, Guid UsuarioId, DateTimeOffset CriadoEm, DateTimeOffset ExpiraEm,
